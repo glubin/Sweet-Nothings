@@ -51,44 +51,45 @@
 			userInfo.userEmail = userEmail;
 			userInfo.toName = toName;
 			userInfo.toPhone = toPhone;
+
 			socketio.emit("create_user", {userInfo:userInfo});
 		});
 
-
+	});
 </script>
 
 
-	</head>
-	<body>
+</head>
+<body>
 
-		<div>
-			<div class="container">
-				<!-- Main component for a primary marketing message or call to action -->
-				<div class="jumbotron">
+	<div>
+		<div class="container">
+			<!-- Main component for a primary marketing message or call to action -->
+			<div class="jumbotron">
 
-					<h3>Send your special someone something special.</h3>
-				</div>
-
+				<h3>Send your special someone something special.</h3>
 			</div>
-		</div> <!-- /container -->
 
+		</div>
+	</div> <!-- /container -->
+
+	<div>
+		<h4>Sign Up</h4>
 		<div>
-			<h4>Sign Up</h4>
-			<div>
-				<div class="form formLogin"> 
-					<label for="">From Name:</label>
-					<input id="signUpName" type="text" placeholder="Your Name"><br>
-					<label for="">Email:</label>
-					<input id="signUpEmail" type="text" placeholder="Your Email"><br>
-					<label for="">To Name:</label>
-					<input id="toName" type="text" placeholder="Significant Other's Name"><br>
-					<label for="">To Email:</label>
-					<input id="toPhone" type="text" placeholder="+1[Phone Number]"><br>
-					<button type="button" id="signUserUp" class="btn btn-primary enterLogin">Sign Up</button>
-				</div>
+			<div class="form formLogin"> 
+				<label for="">From Name:</label>
+				<input id="signUpName" type="text" placeholder="Your Name"><br>
+				<label for="">Email:</label>
+				<input id="signUpEmail" type="text" placeholder="Your Email"><br>
+				<label for="">To Name:</label>
+				<input id="toName" type="text" placeholder="Significant Other's Name"><br>
+				<label for="">To Email:</label>
+				<input id="toPhone" type="text" placeholder="+1[Phone Number]"><br>
+				<button type="button" id="signUserUp" class="btn btn-primary enterLogin">Sign Up</button>
 			</div>
 		</div>
+	</div>
 
 
-	</body>
-	</html>
+</body>
+</html>

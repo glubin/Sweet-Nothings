@@ -1,8 +1,5 @@
-var client = require('twilio')('INSER','INSERT');
-var mongoose = require('mongoose');
-var bcrypt = require('bcrypt');
+var client = require('twilio')('INSERT','INSERT');
 var Firebase = require("firebase");
-// Require the packages we will use:
 var http = require("http"),
 socketio = require("socket.io"),
 fs = require("fs");
@@ -23,95 +20,61 @@ var app = http.createServer(function(req, resp){
 app.listen(1337);
 
 
-// mongoose.connect('mongodb://localhost/test');
-// var db = mongoose.connection;
-// db.on('error', console.error.bind(console, 'connection error:'));
-// db.once('open', function (callback) {
-//	console.log("the database worked!");
-//	var kittySchema = mongoose.Schema({
-//		name: String
-//	});
-//	var Kitten = mongoose.model('Kitten', kittySchema);
-//	var silence = new Kitten({ name: 'Silence' });
-//	console.log(silence.name); // 'Silence'
 
-// });
-
-// Restart Firebase
+// Reset Firebase
 var myFirebaseRef = new Firebase("https://sweet-nothings-app.firebaseio.com/");
 myFirebaseRef.remove();
 
-
-var userObjects = [];
-var sellingQueue = [];
-var countdown = 60;
-
+var messageFrequency = 24;
+var messageHit = 7;
+var users = [];
+var possibleMessages = [
+"I love you so much [NAME]", "I miss you so much [NAME]", "[NAME], You are perfect in every way :)", "[NAME], you are brilliant, smart, and funny"
+];
 
 // Do the Socket.IO magic:
 var io = socketio.listen(app);
 io.sockets.on("connection", function(socket){
 	// This callback runs when a new Socket.IO connection is established.
 
+	var randMessageNum = Math.floor(Math.random() * possibleMessages.length);
+	var messageToSend = possibleMessages[randMessageNum];
+
 	function send_SMS(sendToNumber, sendToMessage){
-		console.log("send text on server " + sendToNumber + ", " + sendToMessage + " !!!!!!!!!!!!");
-		client.sendMessage({
-			to: sendToNumber,
-			from: '+18627666785',
-			body: sendToMessage
-		}, function(err,data){
-			if(err){
-				console.log("error sending message " + JSON.stringify(err));
-			}else{
-				console.log("no error? " + data);
-			}
-		});
+		for (var i=0; i<users.length; i++){
+			messageToSend = messageToSend.replace("[NAME]", users[i].toName);
+			customBody = String(messageToSend + "\n\t - " + users[i].userName);
+			client.sendMessage({
+				to: users[i].toPhone,
+				from: '+18627666785',
+				body: customBody
+			});
+		}
 	}
 
-
-
-socket.on('create_user', function(data){
-	console.log(data);
-	userObjects.push(data);
-	console.log(data.userInfo.email + " aka " + data.userInfo.uniqueID + " joined the lobby with a password of " + data.userInfo.password);
-	var washU = "@wustl.edu";
-	var desiredEmail = String(data.userInfo.email);
-	console.log(desiredEmail.indexOf(washU) + " !!! ");
-	if (desiredEmail.indexOf(washU) > 0){
-
-		for (var i=0; i<userObjects.length; i++){
-			if (userObjects[i].userInfo.email === data.userInfo.email){
-				console.log("you are the user! ");
-				console.log(userObjects[i].userInfo.uniqueID);
-				loadPage(userObjects[i].userInfo.uniqueID);
-				io.to(userObjects[i].userInfo.uniqueID).emit('initialize', {uniqueID:userObjects[i].userInfo.uniqueID});
-				// add to Firebase Users
-				var myFirebaseRef = new Firebase("https://shining-fire-145.firebaseio.com/users");
-				var salt = bcrypt.genSaltSync(10);
-				var hash = bcrypt.hashSync(data.userInfo.password, salt);
-				myFirebaseRef.push({
-					userEmail: data.userInfo.email,
-					userNumber: data.userInfo.phoneNumber,
-					userPassword: hash,
-					userUniqueId:userObjects[i].userInfo.uniqueID
-				});
-
-			}
+	function refresh(){
+		var randomVariable = Math.floor(Math.random() * messageFrequency);
+		if (randomVariable === messageHit){
+			send_SMS();
 		}
 
+		setTimeout(function(){ refresh(); }, 60*60*1000);
 	}
+	refresh();
+
+
+	socket.on('create_user', function(data){
+		users.push(data.userInfo);
+		console.log(users);
+
+		// add to Firebase Users
+		var myFirebaseRef = new Firebase("https://sweet-nothings-app.firebaseio.com/");
+		myFirebaseRef.push({
+			UserName: data.userInfo.userName,
+			UserEmail: data.userInfo.userEmail,
+			ToName: data.userInfo.toName,
+			ToPhone: data.userInfo.toPhone
+		});
+
+	});
 });
-
-
-
-
-
-io.on('connection', function (socket) {
-	console.log("user is connected!");
-	var uniqueID = socket.id;
-	console.log(uniqueID + " is your unique ID" + "user length is " + userObjects.length);
-	io.to(uniqueID).emit('give_user_socket_ID', {uniqueID:uniqueID});
-});
-
-
-});
-
