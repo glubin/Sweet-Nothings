@@ -1,4 +1,4 @@
-var client = require('twilio')('AC7890555f3ad482786c2dec7944a44e69','51c6a8f4a3ebd57575a454d1da9adf30');
+var client = require('twilio')('INSERT','INSERT');
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 var Firebase = require("firebase");
